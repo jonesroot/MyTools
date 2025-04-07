@@ -7,10 +7,11 @@ import platform
 import time
 from datetime import datetime, timedelta
 
-VERSION = "1.0.0"
+DESC="DateTools - Multi Date Utility Tool."
+VERSION = "1.0.1"
 REPO_URL = "https://raw.githubusercontent.com/jonesroot/MyTools/refs/heads/main/Python/datetools.py"
 
-required_modules = ["pytz", "argparse"]
+REQUIRED_MODULES = ["pytz", "argparse"]
 
 class Colors:
     RESET = "\033[0m"
@@ -26,7 +27,8 @@ clr = Colors()
 
 
 def clear_screen():
-    os.system("cls" if platform.system() == "Windows" else "clear")
+    pform = platform.system().lower()
+    os.system("cls" if pform == "windows" else "clear")
 
 
 def auto_install(package_name):
@@ -38,6 +40,7 @@ def auto_install(package_name):
 
 def check_update():
     print(f"{clr.CYAN}Checking for updates...{clr.RESET}")
+    time.sleep(1)
     try:
         subprocess.run(["curl", "-o", "/tmp/datetools", REPO_URL], check=True)
         os.replace("/tmp/datetools", sys.argv[0])
@@ -49,20 +52,51 @@ def check_update():
 
 
 def main():
-    for module in required_modules:
+    clear_screen()
+    for module in REQUIRED_MODULES:
         auto_install(module)
     import argparse
     import pytz
-    parser = argparse.ArgumentParser(description="DateTools - Multi Date Utility Tool")
-    parser.add_argument("--now", action="store_true", help="Show current time")
-    parser.add_argument("--timezone", type=str, help="Show time in specific timezone")
-    parser.add_argument("--add", type=int, help="Add days to current date")
-    parser.add_argument("--countdown", type=str, help="Countdown to specific date (YYYY-MM-DD)")
-    parser.add_argument("--update", action="store_true", help="Update to latest version")
+
+    parser = argparse.ArgumentParser(
+        description=DESC
+    )
+    parser.add_argument(
+        "--now",
+        action="store_true",
+        help="Show current time."
+    )
+    parser.add_argument(
+        "--timezone",
+        type=str,
+        help="Show time in specific timezone."
+    )
+    parser.add_argument(
+        "--add",
+        type=int,
+        help="Add days to current date."
+    )
+    parser.add_argument(
+        "--countdown",
+        type=str,
+        help="Countdown to specific date (YYYY-MM-DD)."
+    )
+    parser.add_argument(
+        "--update",
+        action="store_true",
+        help="Check and update to latest version."
+    )
+    parser.add_argument(
+        "--version",
+        action="store_true",
+        help="Show tool version."
+    )
 
     args = parser.parse_args()
 
-    print(f"{clr.BOLD}DateTools v{VERSION}{clr.RESET}")
+    if args.version:
+        print(f"{clr.GREEN}{DESC}\nVersion: {VERSION}{clr.RESET}")
+        sys.exit()
 
     if args.update:
         check_update()
@@ -70,20 +104,26 @@ def main():
     now = datetime.now()
 
     if args.now:
-        if args.timezone:
+        print(f"{clr.CYAN}Current Time: {now}{clr.RESET}")
+
+    if args.timezone:
+        try:
             tz = pytz.timezone(args.timezone)
-            print(f"Current Time [{args.timezone}]: {datetime.now(tz)}")
-        else:
-            print(f"Current Time [UTC]: {datetime.utcnow()}")
+            print(f"{clr.CYAN}Time in {args.timezone}: {datetime.now(tz)}{clr.RESET}")
+        except pytz.UnknownTimeZoneError:
+            print(f"{clr.RED}Unknown timezone.{clr.RESET}")
 
     if args.add:
-        future = now + timedelta(days=args.add)
-        print(f"Now: {now}\nFuture (+{args.add} days): {future}")
+        future_date = now + timedelta(days=args.add)
+        print(f"{clr.CYAN}Date after {args.add} days: {future_date.date()}{clr.RESET}")
 
     if args.countdown:
-        target = datetime.strptime(args.countdown, "%Y-%m-%d")
-        delta = target - now
-        print(f"Countdown to {args.countdown}: {delta.days} days left")
+        try:
+            target_date = datetime.strptime(args.countdown, "%Y-%m-%d")
+            delta = target_date - now
+            print(f"{clr.CYAN}Countdown: {delta.days} days left.{clr.RESET}")
+        except ValueError:
+            print(f"{clr.RED}Invalid date format. Use YYYY-MM-DD.{clr.RESET}")
 
 
 if __name__ == "__main__":
