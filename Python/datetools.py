@@ -8,7 +8,7 @@ import time
 from datetime import datetime, timedelta
 
 DESC="DateTools - Multi Date Utility Tool."
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 REPO_URL = "https://raw.githubusercontent.com/jonesroot/MyTools/refs/heads/main/Python/datetools.py"
 
 REQUIRED_MODULES = ["pytz", "argparse"]
@@ -41,14 +41,25 @@ def auto_install(package_name):
 def check_update():
     print(f"{clr.CYAN}Checking for updates...{clr.RESET}")
     time.sleep(1)
+    tmp_file = "/tmp/datetools_new"
+
     try:
-        subprocess.run(["curl", "-o", "/tmp/datetools", REPO_URL], check=True)
-        os.replace("/tmp/datetools", sys.argv[0])
-        print(f"{clr.GREEN}Updated to latest version! Restarting...{clr.RESET}")
-        time.sleep(1)
-        os.execv(sys.executable, ['python3'] + sys.argv)
-    except Exception:
-        print(f"{clr.YELLOW}Failed to update. Continuing...{clr.RESET}")
+        subprocess.run(["curl", "-s", "-o", tmp_file, REPO_URL], check=True)
+        
+        with open(tmp_file, "rb") as new_file, open(sys.argv[0], "rb") as old_file:
+            if new_file.read() == old_file.read():
+                print(f"{clr.GREEN}You're already using the latest version.{clr.RESET}")
+                return
+
+        os.replace(tmp_file, sys.argv[0])
+        print(f"{clr.GREEN}Updated to latest version! Restarting in 3 seconds...{clr.RESET}")
+        time.sleep(3)
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+
+    except Exception as e:
+        print(f"{clr.YELLOW}Failed to update: {e}{clr.RESET}")
+        if os.path.exists(tmp_file):
+            os.remove(tmp_file)
 
 
 def main():
