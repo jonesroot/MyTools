@@ -8,7 +8,7 @@ import time
 from datetime import datetime, timedelta
 
 DESC="DateTools - Multi Date Utility Tool."
-VERSION = "1.0.2"
+VERSION = "1.0.3"
 REPO_URL = "https://raw.githubusercontent.com/jonesroot/MyTools/refs/heads/main/Python/datetools.py"
 
 REQUIRED_MODULES = ["pytz", "argparse"]
@@ -54,7 +54,7 @@ def check_update():
         os.replace(tmp_file, sys.argv[0])
         print(f"{clr.GREEN}Updated to latest version! Restarting in 3 seconds...{clr.RESET}")
         time.sleep(3)
-        os.execv(sys.executable, [sys.executable] + sys.argv)
+        os.execv(sys.executable, [sys.executable] + "--version")
 
     except Exception as e:
         print(f"{clr.YELLOW}Failed to update: {e}{clr.RESET}")
